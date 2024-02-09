@@ -1,7 +1,7 @@
 ---
 title: "What I wish I knew when I learnt C"
 date: 2024-01-07
-draft: false
+draft: true
 tags:
   - C
   - C++
