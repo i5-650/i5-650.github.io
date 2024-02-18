@@ -1,7 +1,7 @@
 ---
 title: "What I wish I knew when I learnt C"
 date: 2024-01-07
-draft: true
+draft: false
 tags:
   - C
   - C++
@@ -12,7 +12,7 @@ tags:
 categories:
   - Programming
 ---
-
+## Why am I writing this?
 One day, I decided that I wanted to know how to hack things. I was 15 years old and I did what everyone did: I googled "how to hack a webcam". I found a video from Nawop (you wont find much about him but he was doing tutorials about cybersecurity). It was a metasploit tutorial, showing how to build a reverse shell tcp for a windows target.
 
 I struggled trying to reproduce it, I spent a whole month trying to understand the problems I faced. In the end, I managed to achieve my goal, it wasn't like in the movies but I was happy with it.
@@ -29,10 +29,10 @@ I won't tell you what C is, you certainly already know it. But if it's not the c
 
 But here is some things that you may not know about C:
 - C is named C because it's the successor of [B](https://en.wikipedia.org/wiki/B_(programming_language)), which was the successor of [A (APL)](https://en.wikipedia.org/wiki/APL_(programming_language)).
-- C is actually updated ! There is C99 from 1999, C11 from 2011 and C17 from 2018 (don't ask me why), and C23,C2x are planned for 2024.
+- C is actually updated ! There is C99 from 1999, C11 from 2011 and C17 from 2018 (don't ask me why), and C23,C2x are planned for 2024. But most of the time, you will use C99 or C11 because it's the most supported.
 - In C, an identifier can be up to 31 characters long. It can contain letters, digits and underscores. The first character must be a letter or an underscore.
 - C has been invented to build operating systems, specifically Unix.
-- C is a compiled language, it's a low-level language but it's also a high-level language. It's a low-level language because it's close to the machine, it's a high-level language because it's portable and it's easy to write.
+- C is a compiled language, it's a low-level language but it's also a high-level language. It's a low-level language because it's close to the machine, it's a high-level language because it's portable and it's easy to write. There is a whole debate about it, but I won't talk about it here.
 
 ## Environment
 ### Compiling
@@ -102,6 +102,8 @@ But you can do much more like:
 ```
 This is a macro that will round up the division of A by B. It's useful when you want to divide something in multiple parts. For example, if you want to divide an array of 10 elements in 3 parts, you can do `DIV_ROUNDUP(10, 3)` and it will return 4. But for you it's like a function, you can use it like this: `int a = DIV_ROUNDUP(10, 3);`.
 
+> Note: Those examples could be done with inline functions, but it's not the same thing. I prefer macros in some cases because I have more control over the code.
+
 There is also the `__attribute__` macro, it's useful to tell the compiler some things about your code. For example, you can tell the compiler that a function is deprecated:
 ```c
 void foo(void) __attribute__((deprecated));
@@ -120,3 +122,90 @@ You can also define your code to be optimized with preprocessing instructions:
 ```c
 #pragma GCC optimize("O3")
 ```
+
+### Variable lifetime
+You can use the `static` keyword to make a variable local to a function but with a lifetime of the program.
+It's useful when you want to keep a variable between function calls. For example:
+
+```c
+int foo(void){
+    static int a = 0;
+    a++;
+    return a;
+}
+```
+
+### Syntax tricks
+In C, you define block of codes with `{}`. But you can also use it to define a block of code in a single line:
+
+```c
+if (a > b)
+    return a;
+else
+    return b;
+```
+
+Which means that using `{}` is not mandatory in `if`, `else`, `for`, `while`, etc. But it's a good practice to use it anyway. But here is a trick, you can use `{}` to define a block of code and so the variables defined in this block will not be accessible outside of it:
+
+```c
+int main(void){
+    int age = 0;
+    {
+        char buf[4];
+        fgets(buf, 4, stdin);
+        if(sscanf(buf, "%d", &age) != 1){
+            printf("Invalid input\n");
+            return 1;
+        }
+    }
+
+    printf("You are %d years old\n", age);
+    return 0;
+}
+```
+In this example, `buf` is not accessible outside of the block. Which is useful to avoid polluting the namespace or to avoid mistakes.
+
+## How to write a good C code
+This is a big topic, but I will give you some tips that I think are important.
+
+### Use const
+
+You should use `const` as much as possible. It's a good practice to use it for function parameters, for example:
+
+```c
+void foo(const char *str);
+```
+
+This tells the compiler that the function `foo` will not modify the string `str`. It's useful for the compiler to optimize the code and it's useful for you to know that the function will not modify the string.
+
+I didn't use it for a long time because I worked on small projects, but when you start to work on bigger projects, it's really useful in order to avoid mistakes.
+
+### Use the right type
+You should use the right type for your variables. For example, if you want to store a number between 0 and 255, you should use `uint8_t` instead of `int`.
+It's useful because it's more explicit and it's also useful for the compiler to optimize the code (once again). If you iterate over an array, you should use `size_t`. Because it's the type that is used to store the size of an array.
+
+But using the right type also means being conscious of the size of the type.
+
+### Anticipate the sizes
+
+In C, you are absolutely free, you can do whatever you want. Which means that you can do a lot of mistakes. I will take the example of `scanf`:
+```c
+char a[10];
+scanf("%s", a);
+```
+In this example, if the user enters more than 9 characters, it will overflow the array. It's a common mistake.
+
+I have taken the example of a string because it's easier to understand, but it's the same for any type. You should always be conscious of the size of your variables. And if you didn't know this story, you should read about [A space error: $370 million for an integer overflow](https://hownot2code.wordpress.com/2016/09/02/a-space-error-370-million-for-an-integer-overflow/).
+
+### Use secure functions
+
+As i mentionned earlier you might want to use `scanf`, which is a great function but it's not secure. You should use `fgets` instead. It's a bit more complicated to use, but it's secure.
+
+Same goes for `strcpy`, `strcat`, etc. You should use `strncpy`, `strncat`, etc. It just adds a size parameter to avoid buffer overflow.
+
+You also have functions like `scanf_s`, `strcpy_s`, etc. But they are not standard, so I don't use them.
+
+## Final words
+I hope this article will help you to write better C code. I have learned a lot of things by myself and I think it's important to share it. I have learned a lot of things by doing mistakes, looking into cybersecurity, talking to people, redoing my codes. I think it's a good way to learn but it can take some time. You can also read the source code of the C standard library, it's really interesting and the code is really nice.
+
+This article will for sure be updated in the future, so don't hesitate to come back to it. I'm still learning and I'm still doing mistakes.
