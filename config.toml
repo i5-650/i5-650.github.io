@@ -104,7 +104,7 @@ ignoreErrors = ["error-remote-getjson", "error-missing-instagram-accesstoken"]
   [params.footer]
     enable = true
     #  Custom content (HTML format is supported)
-    custom = ''
+    custom = '<script defer data-domain="i5-650.github.io" src="https://analytics.mrartemus.cloud/js/script.js"></script>'
     #  whether to show Hugo and theme info
     hugo = false
     #  whether to show copyright info
